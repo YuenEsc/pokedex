@@ -7,12 +7,13 @@
  */
 
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
 import BottomNavigator from './src/bottom_navigator';
 
 const App = () => {
   return (
-    <><BottomNavigator/></>
+    <>
+      <BottomNavigator />
+    </>
   );
 };
 

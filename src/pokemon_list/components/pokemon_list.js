@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import useFetch from 'use-http';
 import {FlatList, ActivityIndicator, StyleSheet, View} from 'react-native';
-import {ListItem, Text} from 'react-native-elements';
+import {Text, Card} from 'react-native-elements';
 
 function PokemonList() {
   const [pokemon, setPokemon] = useState([]);
@@ -23,7 +23,9 @@ function PokemonList() {
           name: p.name,
           url: p.url,
           image: `https://pokeres.bastionbot.org/images/pokemon/${id}.png`,
-          types: pokemonData.types.map(type => `${type.type.name.toUpperCase()}`),
+          types: pokemonData.types.map(
+            type => `${type.type.name.toUpperCase()}`,
+          ),
         };
       }),
     );
@@ -44,6 +46,7 @@ function PokemonList() {
         <FlatList
           keyExtractor={keyExtractor}
           data={pokemon}
+          numColumns={2}
           renderItem={({item}) => {
             let color;
             switch (item.types[0]) {
@@ -66,20 +69,23 @@ function PokemonList() {
                 break;
             }
             return (
-              <ListItem
-                title={<Text>{item.name}</Text>}
-                buttonGroup={{
-                  buttons: item.types.map(type => {
-                    return {
-                      element: () => <Text key={item.name + type}>{type}</Text>,
-                    };
-                  }),
-                }}
-                leftAvatar={{rounded: true, source: {uri: item.image}}}
-                containerStyle={{
-                  backgroundColor: color,
-                }}
-              />
+              <View style={{flex: 1}}>
+                <Card
+                  title={<Text>{item.name}</Text>}
+                  // buttonGroup={{
+                  //   buttons: item.types.map(type => {
+                  //     return {
+                  //       element: () => <Text key={item.name + type}>{type}</Text>,
+                  //     };
+                  //   }),
+                  // }}
+                  image={{uri: item.image}}
+                  containerStyle={{
+                    backgroundColor: color,
+                    paddingHorizontal: 20
+                  }}
+                />
+              </View>
           )}}
         />
       )}
