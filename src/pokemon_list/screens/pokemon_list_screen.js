@@ -1,10 +1,11 @@
 import React from 'react';
-import { Text, View } from 'react-native';
+import {SafeAreaView} from 'react-native';
+import PokemonList from '../components/pokemon_list';
 
 export default function PokemonListScreen() {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>PokemonListScreen!</Text>
-      </View>
-    )
+  return (
+    <SafeAreaView>
+      <PokemonList />
+    </SafeAreaView>
+  );
 }
