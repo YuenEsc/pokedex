@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs'
-import PokemonListScreen from '../pokemon_list/screens/pokemon_list_screen';
+import StackNavigator from '../stack_navigator';
 import SettingsScreen from '../settings/screens/settings_screen';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FeatherIcons from 'react-native-vector-icons/Feather';
@@ -17,7 +17,7 @@ export default function BottomNavigator() {
         inactiveColor="#FDAFAF">
         <Tab.Screen
           name="PokemonList"
-          component={PokemonListScreen}
+          component={StackNavigator}
           options={{
             tabBarLabel: 'Pokémon',
             tabBarIcon: ({color}) => (

@@ -1,26 +1,37 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import useFetch from 'use-http';
 import {FlatList, ActivityIndicator, StyleSheet, View} from 'react-native';
-import {Text, Card} from 'react-native-elements';
+import {Text} from 'react-native-elements';
+import PokemonCard from './pokemon_card';
 
-function PokemonList() {
+function PokemonList({navigation}) {
   const [pokemon, setPokemon] = useState([]);
+  const [isEndReached, toggleEndReached] = useState(false);
+  const [url, setUrl] = useState('pokemon?limit=10&offset=0');
   const {get, response, loading, error} = useFetch(
     'https://pokeapi.co/api/v2/',
   );
 
-  useEffect(() => {
-    loadInitialPokemon();
-  }, []); // componentDidMount
+  useEffect(
+    (url, isEndReached) => {
+      if ((isEndReached || pokemon.length === 0) && !loading) {
+        loadPokemon();
+      }
+    },
+    [url, isEndReached, pokemon.length, loadPokemon, loading],
+  ); // componentDidMount
 
-  async function loadInitialPokemon() {
-    const initialPokemon = await get('pokemon?limit=100&offset=0');
-    const initialPokemonList = await Promise.all(
-      initialPokemon.results.map(async (p, i) => {
+  const loadPokemon = useCallback(async () => {
+    const rawPokemonList = await get(url);
+    const pokemonList = await Promise.all(
+      rawPokemonList.results.map(async (p, i) => {
         const id = p.url.split('/')[6];
         const pokemonData = await get(`pokemon/${id}`);
+        const name =
+          p.name.charAt(0).toUpperCase() + p.name.substring(1, p.name.length);
         return {
-          name: p.name,
+          id,
+          name,
           url: p.url,
           image: `https://pokeres.bastionbot.org/images/pokemon/${id}.png`,
           types: pokemonData.types.map(
@@ -29,64 +40,44 @@ function PokemonList() {
         };
       }),
     );
-    if (response.ok) setPokemon(initialPokemonList);
-  }
+    if (response.ok) {
+      const nextUrl = rawPokemonList.next.split('/')[5];
+      setUrl(nextUrl);
+      setPokemon([...pokemon, ...pokemonList]);
+    }
+  }, [pokemon, response.ok, get, url]);
 
   const keyExtractor = (item, index) => index.toString();
 
   return (
     <React.Fragment>
-      {error && <Text>Error!</Text>}
-      {loading && (
+      {error && <Text>{JSON.stringify(error)}</Text>}
+      {loading && pokemon.length === 0 && (
         <View style={styles.loading}>
           <ActivityIndicator size="large" color="#FC6C6D" />
         </View>
       )}
-      {!loading && pokemon && (
+      {pokemon && (
         <FlatList
+          ListFooterComponent={
+            isEndReached &&
+            loading && (
+              <View style={styles.loadingFooterStyle}>
+                <ActivityIndicator />
+              </View>
+            )
+          }
           keyExtractor={keyExtractor}
           data={pokemon}
           numColumns={2}
-          renderItem={({item}) => {
-            let color;
-            switch (item.types[0]) {
-              case 'WATER':
-                color = '#76BEFE';
-                break;
-              case 'FIRE':
-                color = '#FC6C6D';
-                break;
-              case 'GRASS':
-                color = '#49D0B0';
-                break;
-              case 'ELECTRIC':
-                color = '#FFD86F';
-                break;
-              case 'POISON':
-                color = '#7B538B';
-                break;
-              default:
-                break;
-            }
-            return (
-              <View style={{flex: 1}}>
-                <Card
-                  title={<Text>{item.name}</Text>}
-                  // buttonGroup={{
-                  //   buttons: item.types.map(type => {
-                  //     return {
-                  //       element: () => <Text key={item.name + type}>{type}</Text>,
-                  //     };
-                  //   }),
-                  // }}
-                  image={{uri: item.image}}
-                  containerStyle={{
-                    backgroundColor: color,
-                    paddingHorizontal: 20
-                  }}
-                />
-              </View>
-          )}}
+          renderItem={({item}) => (
+            <PokemonCard pokemon={item} navigation={navigation} />
+          )}
+          onEndReached={async () => {
+            toggleEndReached(true);
+            await loadPokemon();
+            toggleEndReached(false);
+          }}
         />
       )}
     </React.Fragment>
@@ -101,7 +92,15 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+  },
+  listTitleStyle: {
+    marginLeft: 8,
+  },
+  loadingFooterStyle: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
