@@ -9,28 +9,32 @@ const Tab = createMaterialTopTabNavigator();
 
 const TabNavigator = () => {
   return (
-    <Tab.Navigator
-      initialRouteName="About"
-      tabBarOptions={{
-        style: {
-          elevation: 0,
-        },
-        indicatorStyle: {
-          width: '11%',
-          marginLeft: '5%',
-          height: 3,
-          borderRadius: 2,
-        },
-        labelStyle: {
-          fontWeight: 'bold',
-          fontSize: 12,
-        },
-      }}>
-      <Tab.Screen name="About" component={AboutScreen} />
-      <Tab.Screen name="Moves" component={MovesScreen} />
-      <Tab.Screen name="Base stats" component={BaseStatsScreen} />
-      <Tab.Screen name="Evolution" component={EvolutionScreen} />
-    </Tab.Navigator>
+    <React.Fragment>
+      <Tab.Navigator
+        initialRouteName="About"
+        tabBarOptions={{
+          style: {
+            elevation: 0,
+            color: '#fff',
+          },
+          indicatorStyle: {
+            width: '11%',
+            marginLeft: '5%',
+            height: 3,
+            borderRadius: 2,
+          },
+          labelStyle: {
+            fontWeight: 'bold',
+            fontSize: 12,
+          },
+          lazy: true,
+        }}>
+        <Tab.Screen name="About" component={AboutScreen} />
+        <Tab.Screen name="Moves" component={MovesScreen} />
+        <Tab.Screen name="Base stats" component={BaseStatsScreen} />
+        <Tab.Screen name="Evolution" component={EvolutionScreen} />
+      </Tab.Navigator>
+    </React.Fragment>
   );
 };
 

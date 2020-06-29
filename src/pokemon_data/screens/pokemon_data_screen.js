@@ -1,19 +1,21 @@
-import React, {useState} from 'react';
-import {Backdrop} from 'react-native-backdrop';
-import {
-  SafeAreaView,
-  TouchableOpacity,
-  View,
-  Text,
-  Dimensions,
-  StyleSheet,
-  Image,
-} from 'react-native';
+import React, {useState, useEffect, useCallback} from 'react';
+import {SafeAreaView, View, Dimensions, StyleSheet} from 'react-native';
 import TabNavigator from '../components/tab_navigator';
-import {ListItem} from 'react-native-elements';
+import getColorsPerType from '../../shared/utils/get_colors_per_type';
+import useFetch from 'use-http';
+import PokemonCarousel from '../components/pokemon_carousel';
+import {Grid, Row, Col} from 'react-native-easy-grid';
+import {Text, Button} from 'react-native-elements';
+import {useSetPokemonId} from '../components/pokemon_id_provider';
 
-const PokemonDataScreen = () => {
+const PokemonDataScreen = ({navigation, route}) => {
   const [visible, setVisible] = useState(false);
+  const [idPokemon, setIdPokemon] = useState(undefined);
+  const [colors, setColors] = useState({
+    color: '#ffffff',
+    secondaryColor: '#ffffff',
+  });
+  const setPokemonId = useSetPokemonId();
 
   const handleOpen = () => {
     setVisible(true);
@@ -23,52 +25,102 @@ const PokemonDataScreen = () => {
     setVisible(false);
   };
 
+  useEffect(() => {
+    if (route.params?.idPokemon) {
+      setIdPokemon(route.params?.idPokemon);
+      setPokemonId(route.params?.idPokemon);
+    }
+  }, [route.params]);
+
+  const {data = [], loading} = useFetch(
+    `pokemon/${idPokemon}`,
+    {
+      onNewData: (currentPokemonData, newPokemonData) => {
+        return {
+          name: newPokemonData.name,
+          order: newPokemonData.order,
+          types: newPokemonData.types.map(
+            typeItem => `${typeItem.type.name.toUpperCase()}`,
+          ),
+        };
+      }, // appends newly fetched todos
+    },
+    [idPokemon],
+  ); // runs onMount AND whenever the `page` updates (onUpdate)
+
+  useEffect(() => {
+    if (data && data.types) {
+      console.log(data);
+      const typeColors = getColorsPerType(data?.types[0]);
+      setColors(currTypeColors => typeColors);
+      handleOpen();
+    }
+  }, [data]);
+
   return (
     <React.Fragment>
-      <SafeAreaView
-        style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <TouchableOpacity
-          onPress={() => setVisible(true)}
-          activeOpacity={0.6}
-          un
-          style={{
-            width: 200,
-            height: 40,
-            justifyContent: 'center',
-            alignItems: 'center',
-            elevation: 1,
-            backgroundColor: '#fff',
-          }}>
-          <Text>Handle Backdrop</Text>
-        </TouchableOpacity>
+      <View style={styles.overlay}>
+        <PokemonCarousel
+          idPokemon={idPokemon}
+          onSnapToItem={newId => {
+            setIdPokemon(newId);
+          }}
+        />
+      </View>
+      <SafeAreaView style={[styles.scene]}>
+        <Grid style={[styles.uperLayer, {backgroundColor: colors.color}]}>
+          <Row style={{height: Dimensions.get('window').height / 10}}>
+            <Col size={3}>
+              <Text
+                h3
+                h3Style={{
+                  color: 'white',
+                  marginHorizontal: 15,
+                  marginVertical: 10,
+                }}>
+                {data.name}
+              </Text>
+            </Col>
+            <Col size={1}>
+              <Text
+                h3
+                h3Style={{
+                  color: 'white',
+                  marginHorizontal: 15,
+                  marginVertical: 10,
+                }}>
+                #{data.order}
+              </Text>
+            </Col>
+          </Row>
+          <Row style={{justifyContent: 'space-between'}}>
+            <Col />
+            {data &&
+              data.types &&
+              data.types.map((type, i) => {
+                return (
+                  <Col>
+                    <Button
+                      key={data.name + type}
+                      title={type}
+                      titleStyle={styles.buttonTitleStyle}
+                      buttonStyle={[
+                        styles.buttonStyle,
+                        {backgroundColor: colors.secondaryColor},
+                      ]}
+                      containerStyle={styles.buttonContainerStyle}
+                      raised={false}
+                    />
+                  </Col>
+                );
+              })}
+            <Col />
+          </Row>
+        </Grid>
       </SafeAreaView>
-      <Backdrop
-        visible={visible}
-        handleOpen={handleOpen}
-        handleClose={handleClose}
-        onClose={() => {}}
-        swipeConfig={{
-          velocityThreshold: 0.3,
-          directionalOffsetThreshold: 80,
-        }}
-        animationConfig={{
-          speed: 14,
-          bounciness: 4,
-        }}
-        overlayColor="rgba(0,0,0,0.0)"
-        backdropStyle={{
-          backgroundColor: '#fff',
-        }}
-        containerStyle={styles.backdropContainer}
-       >
-        {/* <TabNavigator /> */}
-        <View
-          style={{
-            height: Dimensions.get('screen').height / 2,
-          }}>
-          <TabNavigator />
-        </View>
-      </Backdrop>
+      <View style={styles.bottomLayer}>
+        <TabNavigator />
+      </View>
     </React.Fragment>
   );
 };
@@ -76,6 +128,22 @@ const PokemonDataScreen = () => {
 const styles = StyleSheet.create({
   scene: {
     flex: 1,
+  },
+  bottomLayer: {
+    paddingTop: 20,
+    backgroundColor: '#ffffff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: Dimensions.get('window').height / 2,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: Dimensions.get('window').height / 2,
+    bottom: 0,
+    flex: 2,
+  },
+  buttonContainerStyle: {
+    paddingHorizontal: 4,
   },
   containerHeader: {
     flex: 1,
@@ -115,19 +183,17 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '15%',
   },
-  backdropContainer: {
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.41,
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingHorizontal: 16,
+  overlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: Dimensions.get('window').height / 6,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 4,
+    elevation: 4,
+    height: Dimensions.get('window').height / 2.5,
   },
 });
 
