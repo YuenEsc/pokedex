@@ -5,7 +5,7 @@ import {ActivityIndicator} from 'react-native-paper';
 const ListFooter = () => {
   return (
     <View style={styles.loadingContainer}>
-      <ActivityIndicator animating size="large" color="#FC6C6D" s/>
+      <ActivityIndicator animating size="large" color="#FC6C6D" />
     </View>
   );
 };

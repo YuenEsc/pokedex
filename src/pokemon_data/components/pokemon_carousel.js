@@ -50,6 +50,7 @@ const MyCarousel = props => {
           sliderWidth={screenWidth}
           sliderHeight={screenWidth}
           itemWidth={screenWidth - pokeWidth}
+          initialNumToRender={3}
           data={entries}
           onSnapToItem={index => {
             if (props && props.onSnapToItem) {

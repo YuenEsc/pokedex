@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {SafeAreaView, View, Dimensions, StyleSheet} from 'react-native';
 import TabNavigator from '../components/tab_navigator';
 import getColorsPerType from '../../shared/utils/get_colors_per_type';
@@ -7,9 +7,10 @@ import PokemonCarousel from '../components/pokemon_carousel';
 import {Grid, Row, Col} from 'react-native-easy-grid';
 import {Text, Button} from 'react-native-elements';
 import {useSetPokemonId} from '../components/pokemon_id_provider';
+import Snackbar from 'react-native-snackbar';
 
 const PokemonDataScreen = ({navigation, route}) => {
-  const [visible, setVisible] = useState(false);
+  let attempts = useRef(0);
   const [idPokemon, setPokemonId] = useState(undefined);
   const [colors, setColors] = useState({
     color: '#ffffff',
@@ -17,33 +18,73 @@ const PokemonDataScreen = ({navigation, route}) => {
   });
   const setPokemonIdForProvider = useSetPokemonId();
 
-  const handleOpen = () => {
-    setVisible(true);
-  };
-
-  const handleClose = () => {
-    setVisible(false);
-  };
-
   useEffect(() => {
-    if (route.params?.idPokemon) {
+    if (route.params?.idPokemon && !idPokemon) {
       setPokemonId(route.params?.idPokemon);
       setPokemonIdForProvider(route.params?.idPokemon);
     }
-  }, [route.params]);
+  }, [route?.params.idPokemon]);
 
-  const {data = [], loading} = useFetch(
-    `pokemon/${idPokemon}`,
+  const {data = [], loading, get} = useFetch(
+    idPokemon ? `pokemon/${idPokemon}` : '',
     {
       onNewData: (currentPokemonData, newPokemonData) => {
-        return {
-          name: newPokemonData.name,
-          order: newPokemonData.order,
-          types: newPokemonData.types.map(
-            typeItem => `${typeItem.type.name.toUpperCase()}`,
-          ),
-        };
+        if (newPokemonData && newPokemonData?.name) {
+          return {
+            name:
+              newPokemonData?.name?.charAt(0)?.toUpperCase() +
+              newPokemonData.name?.substring(1, newPokemonData?.name?.length),
+            order: newPokemonData?.order,
+            types: newPokemonData?.types?.map(
+              typeItem => `${typeItem?.type?.name.toUpperCase()}`,
+            ),
+          };
+        } else if (currentPokemonData && currentPokemonData?.name) {
+          return {
+            name:
+              currentPokemonData?.name?.charAt(0)?.toUpperCase() +
+              currentPokemonData?.name?.substring(
+                1,
+                currentPokemonData?.name?.length,
+              ),
+            order: currentPokemonData?.order,
+            types: currentPokemonData?.types?.map(
+              typeItem => `${typeItem?.type?.name?.toUpperCase()}`,
+            ),
+          };
+        }
+        return [];
       }, // appends newly fetched todos
+      retries: 0,
+      // retryOn: [305]
+      retryOn({attempt, error: retryError, response}) {
+        attempts.current = attempt + 1;
+        console.log('(retryOn) attempt', attempt);
+        console.log('(retryOn) error', retryError);
+        console.log('(retryOn) response', response);
+        return response && response.status >= 300;
+      },
+      // retryDelay: 3000,
+      retryDelay({attempt, error: retryDelayError, response}) {
+        console.log('(retryDelay) attempt', attempt);
+        console.log('(retryDelay) error', retryDelayError);
+        console.log('(retryDelay) response (delay)', response);
+        return 1000 * (attempt + 1);
+      },
+      onError(error) {
+        console.log(JSON.stringify(error));
+        Snackbar.show({
+          text:
+            'Cannot fetch pokemon information. Check your internet connection.',
+          duration: Snackbar.LENGTH_SHORT,
+          backgroundColor: '#FB3737',
+          action: {
+            text: 'TRY AGAIN',
+            textColor: 'white',
+            onPress: () => get(),
+          },
+        });
+      },
     },
     [idPokemon],
   ); // runs onMount AND whenever the `page` updates (onUpdate)
@@ -52,7 +93,6 @@ const PokemonDataScreen = ({navigation, route}) => {
     if (data && data.types) {
       const typeColors = getColorsPerType(data?.types[0]);
       setColors(currTypeColors => typeColors);
-      handleOpen();
     }
   }, [data]);
 
@@ -68,55 +108,45 @@ const PokemonDataScreen = ({navigation, route}) => {
         />
       </View>
       <SafeAreaView style={[styles.scene]}>
-        <Grid style={[styles.uperLayer, {backgroundColor: colors.color}]}>
-          <Row style={{height: Dimensions.get('window').height / 10}}>
-            <Col size={3}>
-              <Text
-                h3
-                h3Style={{
-                  color: 'white',
-                  marginHorizontal: 15,
-                  marginVertical: 10,
-                }}>
-                {data.name}
-              </Text>
-            </Col>
-            <Col size={1}>
-              <Text
-                h3
-                h3Style={{
-                  color: 'white',
-                  marginHorizontal: 15,
-                  marginVertical: 10,
-                }}>
-                #{data.order}
-              </Text>
-            </Col>
-          </Row>
-          <Row style={{justifyContent: 'space-between'}}>
-            <Col />
-            {data &&
-              data.types &&
-              data.types.map((type, i) => {
-                return (
-                  <Col>
-                    <Button
-                      key={data.name + type}
-                      title={type}
-                      titleStyle={styles.buttonTitleStyle}
-                      buttonStyle={[
-                        styles.buttonStyle,
-                        {backgroundColor: colors.secondaryColor},
-                      ]}
-                      containerStyle={styles.buttonContainerStyle}
-                      raised={false}
-                    />
-                  </Col>
-                );
-              })}
-            <Col />
-          </Row>
-        </Grid>
+        {data && (
+          <Grid style={[styles.uperLayer, {backgroundColor: colors.color}]}>
+            <Row style={{height: Dimensions.get('window').height / 10}}>
+              <Col size={3}>
+                <Text h3 h3Style={styles.h3Style}>
+                  {data.name}
+                </Text>
+              </Col>
+              <Col size={1}>
+                <Text h3 h3Style={styles.numberStyle}>
+                  #{data.order}
+                </Text>
+              </Col>
+            </Row>
+            <Row style={styles.rowContainer}>
+              <Col />
+              {data &&
+                data.types &&
+                data.types.map((type, i) => {
+                  return (
+                    <Col>
+                      <Button
+                        key={data.name + type}
+                        title={type}
+                        titleStyle={styles.buttonTitleStyle}
+                        buttonStyle={[
+                          styles.buttonStyle,
+                          {backgroundColor: colors.secondaryColor},
+                        ]}
+                        containerStyle={styles.buttonContainerStyle}
+                        raised={false}
+                      />
+                    </Col>
+                  );
+                })}
+              <Col />
+            </Row>
+          </Grid>
+        )}
       </SafeAreaView>
       <View style={styles.bottomLayer}>
         <TabNavigator />
@@ -150,6 +180,20 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  rowContainer: {
+    justifyContent: 'space-between',
+  },
+  h3Style: {
+    color: 'white',
+    marginHorizontal: 15,
+    marginVertical: 10,
+  },
+  numberStyle: {
+    color: 'white',
+    marginHorizontal: 15,
+    marginVertical: 10,
+    fontSize: 35,
   },
   textContainer: {
     marginTop: 70,

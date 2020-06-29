@@ -1,16 +1,16 @@
-import React from 'react';
+import React, {useRef} from 'react';
 import {StyleSheet, SafeAreaView} from 'react-native';
-import {ListItem, Text} from 'react-native-elements';
-import {Grid, Col, Row} from 'react-native-easy-grid';
-import {ScrollView, FlatList} from 'react-native-gesture-handler';
+import {ListItem} from 'react-native-elements';
+import {FlatList} from 'react-native-gesture-handler';
 import {usePokemonIdState} from '../components/pokemon_id_provider';
 import useFetch from 'use-http';
-import {ProgressBar, Colors} from 'react-native-paper';
+import Snackbar from 'react-native-snackbar';
 
 const MovesScreen = props => {
+  let attempts = useRef(0);
   const pokemonId = usePokemonIdState();
 
-  const {data = [], loading} = useFetch(
+  const {data = [], loading, get} = useFetch(
     `/pokemon/${pokemonId}`,
     {
       onNewData: (currPokemon, newPokemon) => {
@@ -20,17 +20,47 @@ const MovesScreen = props => {
           })),
         };
       }, // appends newly fetched todos
+      retries: 0,
+      // retryOn: [305]
+      retryOn({attempt, error: retryError, response}) {
+        attempts.current = attempt + 1;
+        console.log('(retryOn) attempt', attempt);
+        console.log('(retryOn) error', retryError);
+        console.log('(retryOn) response', response);
+        return response && response.status >= 300;
+      },
+      // retryDelay: 3000,
+      retryDelay({attempt, error: retryDelayError, response}) {
+        console.log('(retryDelay) attempt', attempt);
+        console.log('(retryDelay) error', retryDelayError);
+        console.log('(retryDelay) response (delay)', response);
+        return 1000 * (attempt + 1);
+      },
+      onError(error) {
+        console.log(JSON.stringify(error));
+        Snackbar.show({
+          text:
+            'Cannot fetch pokemon information. Check your internet connection.',
+          duration: Snackbar.LENGTH_SHORT,
+          backgroundColor: '#FB3737',
+          action: {
+            text: 'TRY AGAIN',
+            textColor: 'white',
+            onPress: () => get(),
+          },
+        });
+      },
     },
     [pokemonId],
   );
 
   return (
     <SafeAreaView style={styles.mainContainer}>
-      {data && data.moves && !loading && (
+      {data && data?.moves && !loading && (
         <FlatList
           keyExtractor={(item, i) => item.name}
           data={data.moves}
-          renderItem={({item}) => <ListItem title={item.name} />}
+          renderItem={({item}) => <ListItem title={item?.name} />}
         />
       )}
     </SafeAreaView>

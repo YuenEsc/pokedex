@@ -1,32 +1,64 @@
-import React from 'react';
-import {SafeAreaView, View, StyleSheet} from 'react-native';
-import {ListItem, Text} from 'react-native-elements';
+import React, {useRef} from 'react';
+import {StyleSheet} from 'react-native';
+import {Text} from 'react-native-elements';
 import {Grid, Col, Row} from 'react-native-easy-grid';
 import {ScrollView} from 'react-native-gesture-handler';
 import {usePokemonIdState} from '../components/pokemon_id_provider';
 import useFetch from 'use-http';
+import Snackbar from 'react-native-snackbar';
 
 const AboutScreen = props => {
+  let attempts = useRef(0);
   const pokemonId = usePokemonIdState();
 
-  const {data = [], loading} = useFetch(
-    `/pokemon-species/${pokemonId}`,
+  const {data = [], loading, get} = useFetch(
+    pokemonId ? `/pokemon-species/${pokemonId}` : '',
     {
       onNewData: (currPokemon, newPokemon) => {
         return {
-          description: newPokemon.flavor_text_entries.find(
-            flavorTextItem => flavorTextItem.language.name === 'en',
+          description: newPokemon?.flavor_text_entries?.find(
+            flavorTextItem => flavorTextItem?.language?.name === 'en',
           ),
-          genera: newPokemon.genera.find(
-            genusItem => genusItem.language.name === 'en',
+          genera: newPokemon?.genera?.find(
+            genusItem => genusItem?.language?.name === 'en',
           ),
-          growth_rate: newPokemon.growth_rate.name,
-          habitat: newPokemon.habitat.name,
-          shape: newPokemon.shape.name,
-          eggGroups: newPokemon.egg_groups.map(
-            eggGroupsItem => `${eggGroupsItem.name}`,
+          growth_rate: newPokemon?.growth_rate?.name,
+          habitat: newPokemon?.habitat?.name,
+          shape: newPokemon?.shape?.name,
+          eggGroups: newPokemon?.egg_groups?.map(
+            eggGroupsItem => `${eggGroupsItem?.name}`,
           ),
         };
+      },
+      retries: 0,
+      // retryOn: [305]
+      retryOn({attempt, error: retryError, response}) {
+        attempts.current = attempt + 1;
+        console.log('(retryOn) attempt', attempt);
+        console.log('(retryOn) error', retryError);
+        console.log('(retryOn) response', response);
+        return response && response.status >= 300;
+      },
+      // retryDelay: 3000,
+      retryDelay({attempt, error: retryDelayError, response}) {
+        console.log('(retryDelay) attempt', attempt);
+        console.log('(retryDelay) error', retryDelayError);
+        console.log('(retryDelay) response (delay)', response);
+        return 1000 * (attempt + 1);
+      },
+      onError(error) {
+        console.log(JSON.stringify(error));
+        Snackbar.show({
+          text:
+            'Cannot fetch pokemon information. Check your internet connection.',
+          duration: Snackbar.LENGTH_SHORT,
+          backgroundColor: '#FB3737',
+          action: {
+            text: 'TRY AGAIN',
+            textColor: 'white',
+            onPress: () => get(),
+          },
+        });
       }, // appends newly fetched todos
     },
     [pokemonId],
@@ -34,7 +66,7 @@ const AboutScreen = props => {
 
   return (
     <ScrollView style={styles.mainContainer}>
-      {data && !loading && (
+      {data && data !== null && !loading && (
         <Grid style={styles.gridContainer}>
           <Row>
             <Col>
@@ -43,7 +75,10 @@ const AboutScreen = props => {
           </Row>
           <Row>
             <Col>
-              <Text>{`${data.description.flavor_text.replace(/\\\w/g, '')}`}</Text>
+              <Text>{`${data?.description?.flavor_text?.replace(
+                /\\\w/g,
+                '',
+              )}`}</Text>
             </Col>
           </Row>
           <Row>
@@ -53,7 +88,7 @@ const AboutScreen = props => {
               </Text>
             </Col>
             <Col size={2}>
-              <Text style={styles.infoFont}>{data.genera.genus}</Text>
+              <Text style={styles.infoFont}>{data?.genera?.genus}</Text>
             </Col>
           </Row>
           <Row>
@@ -63,7 +98,7 @@ const AboutScreen = props => {
               </Text>
             </Col>
             <Col size={2}>
-              <Text style={styles.infoFont}>{data.growth_rate}</Text>
+              <Text style={styles.infoFont}>{data?.growth_rate}</Text>
             </Col>
           </Row>
           <Row>
@@ -73,7 +108,7 @@ const AboutScreen = props => {
               </Text>
             </Col>
             <Col size={2}>
-              <Text style={styles.infoFont}>{data.shape}</Text>
+              <Text style={styles.infoFont}>{data?.shape}</Text>
             </Col>
           </Row>
           <Row>
@@ -83,7 +118,7 @@ const AboutScreen = props => {
               </Text>
             </Col>
             <Col size={2}>
-              <Text style={styles.infoFont}>{data.eggGroups}</Text>
+              <Text style={styles.infoFont}>{data?.eggGroups}</Text>
             </Col>
           </Row>
         </Grid>

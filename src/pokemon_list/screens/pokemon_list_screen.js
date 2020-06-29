@@ -14,6 +14,5 @@ const styles = StyleSheet.create({
   MainContainer: {
     justifyContent: 'center',
     flex: 1,
-    paddingTop: 30,
   },
 });

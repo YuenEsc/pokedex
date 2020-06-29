@@ -1,42 +1,47 @@
-import React, {useEffect, useState, useCallback, Suspense} from 'react';
+import React, {useEffect, useState, useCallback, useRef} from 'react';
 import useFetch from 'use-http';
 import {FlatList, StyleSheet, View} from 'react-native';
-import {Text} from 'react-native-elements';
+import {Text, Button} from 'react-native-elements';
 import PokemonCard from './pokemon_card';
 import ListFooter from '../components/list_footer';
 import {ActivityIndicator} from 'react-native-paper';
+import Snackbar from 'react-native-snackbar';
 
 const parseRawPokemons = rawPokemons => {
-  return Promise.all(
-    rawPokemons.map(async (p, i) => {
-      const id = p.url.split('/')[6];
-      const types = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
-        .then(result => result.json())
-        .then(data =>
-          data.types.map(typeItem => `${typeItem.type.name.toUpperCase()}`),
-        );
-      const name =
-        p.name.charAt(0).toUpperCase() + p.name.substring(1, p.name.length);
-      return {
-        id,
-        name,
-        url: p.url,
-        image: `https://pokeres.bastionbot.org/images/pokemon/${id}.png`,
-        types: types,
-      };
-    }),
-  );
+  if (rawPokemons !== null) {
+    return Promise.all(
+      rawPokemons.map(async (p, i) => {
+        const id = p.url.split('/')[6];
+        const types = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
+          .then(result => result.json())
+          .then(data =>
+            data.types.map(typeItem => `${typeItem.type.name.toUpperCase()}`),
+          );
+        const name =
+          p.name.charAt(0).toUpperCase() + p.name.substring(1, p.name.length);
+        return {
+          id,
+          name,
+          url: p.url,
+          image: `https://pokeres.bastionbot.org/images/pokemon/${id}.png`,
+          types: types,
+        };
+      }),
+    );
+  } else {
+    return Promise.reject('Something bad happened');
+  }
 };
 
 const PokemonList = ({navigation}) => {
+  let attempts = useRef(0);
   const [url, setUrl] = useState('pokemon?limit=10&offset=0');
   const [pokemons, setPokemons] = useState([]);
-  const [isEndReached, toggleEndReached] = useState(false);
   const [loadingPokemons, setLoadingPokemons] = useState(false);
 
   const keyExtractor = (item, index) => index.toString();
 
-  const {data = [], loading, response} = useFetch(
+  const {data = [], loading, error, get} = useFetch(
     url,
     {
       onNewData: (currPokemons, newPokemons) => {
@@ -48,6 +53,34 @@ const PokemonList = ({navigation}) => {
               ? [...currPokemons.results, ...newPokemons.results]
               : newPokemons.results,
         };
+      },
+      retries: 2,
+      // retryOn: [305]
+      retryOn({attempt, error: retryError, response}) {
+        attempts.current = attempt + 1;
+        console.log('(retryOn) attempt', attempt);
+        console.log('(retryOn) error', retryError);
+        console.log('(retryOn) response', response);
+        return response && response.status >= 300;
+      },
+      // retryDelay: 3000,
+      retryDelay({attempt, error: retryDelayError, response}) {
+        console.log('(retryDelay) attempt', attempt);
+        console.log('(retryDelay) error', retryDelayError);
+        console.log('(retryDelay) response (delay)', response);
+        return 1000 * (attempt + 1);
+      },
+      onError() {
+        Snackbar.show({
+          text: 'Cannot fetch more pokemons. Check your internet connection.',
+          duration: Snackbar.LENGTH_INDEFINITE,
+          backgroundColor: '#FB3737',
+          action: {
+            text: 'TRY AGAIN',
+            textColor: 'white',
+            onPress: () => get(),
+          },
+        });
       },
       perPage: 10,
     },
@@ -62,12 +95,14 @@ const PokemonList = ({navigation}) => {
   }, [data.results]);
 
   useEffect(() => {
-    parsePokemons();
-  }, [parsePokemons]);
+    if (data != null && !loading) {
+      parsePokemons();
+    }
+  }, [data, loading]);
 
   return (
     <React.Fragment>
-      {loading && pokemons.length === 0 && (
+      {(loading || !loadingPokemons) && pokemons.length === 0 && !error && (
         <View style={styles.loading}>
           <ActivityIndicator size="large" color="#FC6C6D" />
         </View>
@@ -87,8 +122,20 @@ const PokemonList = ({navigation}) => {
               setUrl(data.next);
             }
           }}
-          ListFooterComponent={<ListFooter />}
+          ListFooterComponent={
+            !loadingPokemons ? <ListFooter /> : <React.Fragment />
+          }
         />
+      )}
+      {error && pokemons.length === 0 && (
+        <View style={styles.errorWrapper}>
+          <Text h4 h4Style={styles.errorText}>
+            Error! Something bad happened, try again later or check your
+            internet connection
+          </Text>
+          <View style={{marginTop: 40}} />
+          <Button title="Try again" onPress={() => get()} />
+        </View>
       )}
     </React.Fragment>
   );
@@ -104,8 +151,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  errorText: {
+    color: '#FB3737',
+    textAlign: 'left',
+  },
   listTitleStyle: {
     marginLeft: 8,
+  },
+  errorWrapper: {
+    flex: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 40,
   },
   loadingFooterStyle: {
     flex: 1,
