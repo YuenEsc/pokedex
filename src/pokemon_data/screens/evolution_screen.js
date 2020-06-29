@@ -8,7 +8,9 @@ import Snackbar from 'react-native-snackbar';
 const fetchEvolutionChainUrl = async pokemonId => {
   if (pokemonId !== undefined) {
     return await fetch(
-      pokemonId ? `https://pokeapi.co/api/v2/pokemon-species/${pokemonId}/` : '',
+      pokemonId
+        ? `https://pokeapi.co/api/v2/pokemon-species/${pokemonId}/`
+        : '',
     )
       .then(response => response.json())
       .then(data => {
@@ -79,8 +81,14 @@ const EvolutionScreen = props => {
     evolutionChainUrl,
     {
       onNewData: (currPokemon, newPokemon) => {
-        const evolutions = parseEvolutionChain(newPokemon.chain);
-        return evolutions;
+        if (newPokemon && newPokemon?.chain) {
+          const evolutions = parseEvolutionChain(newPokemon.chain);
+          return evolutions;
+        } else if (currPokemon && currPokemon?.chain) {
+          const evolutions = parseEvolutionChain(currPokemon.chain);
+          return evolutions;
+        }
+        return [];
       }, // appends newly fetched todos
       retries: 0,
       // retryOn: [305]

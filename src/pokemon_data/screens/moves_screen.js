@@ -14,11 +14,19 @@ const MovesScreen = props => {
     `/pokemon/${pokemonId}`,
     {
       onNewData: (currPokemon, newPokemon) => {
-        return {
-          moves: newPokemon.moves.map(moveItem => ({
-            name: `${moveItem.move.name}`,
-          })),
-        };
+        if (newPokemon && newPokemon?.moves) {
+          return {
+            moves: newPokemon?.moves.map(moveItem => ({
+              name: `${moveItem?.move?.name}`,
+            })),
+          };
+        } else if (currPokemon && currPokemon?.moves) {
+          return {
+            moves: currPokemon.moves.map(moveItem => ({
+              name: `${moveItem?.move?.name}`,
+            })),
+          };
+        }
       }, // appends newly fetched todos
       retries: 0,
       // retryOn: [305]

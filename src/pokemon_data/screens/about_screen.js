@@ -15,20 +15,38 @@ const AboutScreen = props => {
     pokemonId ? `/pokemon-species/${pokemonId}` : '',
     {
       onNewData: (currPokemon, newPokemon) => {
-        return {
-          description: newPokemon?.flavor_text_entries?.find(
-            flavorTextItem => flavorTextItem?.language?.name === 'en',
-          ),
-          genera: newPokemon?.genera?.find(
-            genusItem => genusItem?.language?.name === 'en',
-          ),
-          growth_rate: newPokemon?.growth_rate?.name,
-          habitat: newPokemon?.habitat?.name,
-          shape: newPokemon?.shape?.name,
-          eggGroups: newPokemon?.egg_groups?.map(
-            eggGroupsItem => `${eggGroupsItem?.name}`,
-          ),
-        };
+        if (newPokemon && newPokemon?.flavor_text_entries) {
+          return {
+            description: newPokemon?.flavor_text_entries?.find(
+              flavorTextItem => flavorTextItem?.language?.name === 'en',
+            ),
+            genera: newPokemon?.genera?.find(
+              genusItem => genusItem?.language?.name === 'en',
+            ),
+            growth_rate: newPokemon?.growth_rate?.name,
+            habitat: newPokemon?.habitat?.name,
+            shape: newPokemon?.shape?.name,
+            eggGroups: newPokemon?.egg_groups?.map(
+              eggGroupsItem => `${eggGroupsItem?.name}`,
+            ),
+          };
+        } else if (currPokemon && currPokemon?.flavor_text_entries) {
+          return {
+            description: currPokemon?.flavor_text_entries?.find(
+              flavorTextItem => flavorTextItem?.language?.name === 'en',
+            ),
+            genera: currPokemon?.genera?.find(
+              genusItem => genusItem?.language?.name === 'en',
+            ),
+            growth_rate: currPokemon?.growth_rate?.name,
+            habitat: currPokemon?.habitat?.name,
+            shape: currPokemon?.shape?.name,
+            eggGroups: currPokemon?.egg_groups?.map(
+              eggGroupsItem => `${eggGroupsItem?.name}`,
+            ),
+          };
+        }
+        return [];
       },
       retries: 0,
       // retryOn: [305]

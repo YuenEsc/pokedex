@@ -16,25 +16,49 @@ const BaseStatsScreen = props => {
     pokemonId ? `/pokemon/${pokemonId}` : '',
     {
       onNewData: (currPokemon, newPokemon) => {
-        return {
-          hp: newPokemon?.stats?.find(statItem => statItem?.stat?.name === 'hp')
-            ?.base_stat,
-          attack: newPokemon?.stats?.find(
-            statItem => statItem?.stat?.name === 'attack',
-          )?.base_stat,
-          defense: newPokemon?.stats?.find(
-            statItem => statItem?.stat?.name === 'defense',
-          )?.base_stat,
-          special_attack: newPokemon?.stats?.find(
-            statItem => statItem?.stat?.name === 'special-attack',
-          )?.base_stat,
-          special_defense: newPokemon?.stats?.find(
-            statItem => statItem?.stat?.name === 'special-defense',
-          )?.base_stat,
-          speed: newPokemon?.stats?.find(
-            statItem => statItem?.stat?.name === 'speed',
-          )?.base_stat,
-        };
+        if (newPokemon && newPokemon?.stats) {
+          return {
+            hp: newPokemon?.stats?.find(
+              statItem => statItem?.stat?.name === 'hp',
+            )?.base_stat,
+            attack: newPokemon?.stats?.find(
+              statItem => statItem?.stat?.name === 'attack',
+            )?.base_stat,
+            defense: newPokemon?.stats?.find(
+              statItem => statItem?.stat?.name === 'defense',
+            )?.base_stat,
+            special_attack: newPokemon?.stats?.find(
+              statItem => statItem?.stat?.name === 'special-attack',
+            )?.base_stat,
+            special_defense: newPokemon?.stats?.find(
+              statItem => statItem?.stat?.name === 'special-defense',
+            )?.base_stat,
+            speed: newPokemon?.stats?.find(
+              statItem => statItem?.stat?.name === 'speed',
+            )?.base_stat,
+          };
+        } else if (currPokemon && currPokemon?.stats) {
+          return {
+            hp: currPokemon?.stats?.find(
+              statItem => statItem?.stat?.name === 'hp',
+            )?.base_stat,
+            attack: currPokemon?.stats?.find(
+              statItem => statItem?.stat?.name === 'attack',
+            )?.base_stat,
+            defense: currPokemon?.stats?.find(
+              statItem => statItem?.stat?.name === 'defense',
+            )?.base_stat,
+            special_attack: currPokemon?.stats?.find(
+              statItem => statItem?.stat?.name === 'special-attack',
+            )?.base_stat,
+            special_defense: currPokemon?.stats?.find(
+              statItem => statItem?.stat?.name === 'special-defense',
+            )?.base_stat,
+            speed: currPokemon?.stats?.find(
+              statItem => statItem?.stat?.name === 'speed',
+            )?.base_stat,
+          };
+        }
       }, // appends newly fetched todos
       retries: 0,
       // retryOn: [305]
