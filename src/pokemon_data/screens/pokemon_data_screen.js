@@ -10,12 +10,12 @@ import {useSetPokemonId} from '../components/pokemon_id_provider';
 
 const PokemonDataScreen = ({navigation, route}) => {
   const [visible, setVisible] = useState(false);
-  const [idPokemon, setIdPokemon] = useState(undefined);
+  const [idPokemon, setPokemonId] = useState(undefined);
   const [colors, setColors] = useState({
     color: '#ffffff',
     secondaryColor: '#ffffff',
   });
-  const setPokemonId = useSetPokemonId();
+  const setPokemonIdForProvider = useSetPokemonId();
 
   const handleOpen = () => {
     setVisible(true);
@@ -27,8 +27,8 @@ const PokemonDataScreen = ({navigation, route}) => {
 
   useEffect(() => {
     if (route.params?.idPokemon) {
-      setIdPokemon(route.params?.idPokemon);
       setPokemonId(route.params?.idPokemon);
+      setPokemonIdForProvider(route.params?.idPokemon);
     }
   }, [route.params]);
 
@@ -50,7 +50,6 @@ const PokemonDataScreen = ({navigation, route}) => {
 
   useEffect(() => {
     if (data && data.types) {
-      console.log(data);
       const typeColors = getColorsPerType(data?.types[0]);
       setColors(currTypeColors => typeColors);
       handleOpen();
@@ -63,7 +62,8 @@ const PokemonDataScreen = ({navigation, route}) => {
         <PokemonCarousel
           idPokemon={idPokemon}
           onSnapToItem={newId => {
-            setIdPokemon(newId);
+            setPokemonId(newId);
+            setPokemonIdForProvider(newId);
           }}
         />
       </View>

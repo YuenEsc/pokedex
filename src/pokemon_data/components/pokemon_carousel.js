@@ -1,7 +1,6 @@
 import React, {useRef, useState, useEffect} from 'react';
 import Carousel, {ParallaxImage} from 'react-native-snap-carousel';
 import {View, Dimensions, StyleSheet, Platform} from 'react-native';
-import {useSetPokemonId} from './pokemon_id_provider';
 
 const {width: screenWidth} = Dimensions.get('window');
 const pokeWidth = 120;
@@ -9,7 +8,6 @@ const pokeWidth = 120;
 const MyCarousel = props => {
   const [entries, setEntries] = useState([]);
   const carouselRef = useRef(null);
-  const setPokemonId = useSetPokemonId();
 
   const goForward = () => {
     carouselRef.current.snapToNext();
@@ -42,7 +40,6 @@ const MyCarousel = props => {
         <Carousel
           initialScrollIndex={props.idPokemon}
           getItemLayout={(data, index) => {
-            console.log(props.idPokemon);
             return {
               length: screenWidth - pokeWidth,
               offset: (screenWidth - pokeWidth) * index,
@@ -57,7 +54,6 @@ const MyCarousel = props => {
           onSnapToItem={index => {
             if (props && props.onSnapToItem) {
               props.onSnapToItem(index);
-              setPokemonId(index);
             }
           }}
           renderItem={renderItem}

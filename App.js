@@ -12,15 +12,26 @@ import {Provider} from 'use-http';
 import {View, StyleSheet} from 'react-native';
 import {ActivityIndicator} from 'react-native-paper';
 import {NavigationContainer} from '@react-navigation/native';
-import { PokemonIdProvider } from './src/pokemon_data/components/pokemon_id_provider';
+import {PokemonIdProvider} from './src/pokemon_data/components/pokemon_id_provider';
+import {ThemeProvider} from 'react-native-elements';
+
+const theme = {
+  Button: {
+    titleStyle: {
+      fontFamily: 'monospace',
+    },
+  },
+};
 
 const App = () => {
   return (
-    <Provider url="https://pokeapi.co/api/v2/" >
+    <Provider url="https://pokeapi.co/api/v2/">
       <PokemonIdProvider>
-        <NavigationContainer>
-          <StackNavigator />
-        </NavigationContainer>
+        <ThemeProvider theme={theme}>
+          <NavigationContainer>
+            <StackNavigator />
+          </NavigationContainer>
+        </ThemeProvider>
       </PokemonIdProvider>
     </Provider>
   );
