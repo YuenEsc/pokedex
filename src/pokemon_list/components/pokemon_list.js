@@ -88,17 +88,19 @@ const PokemonList = ({navigation}) => {
   );
 
   const parsePokemons = useCallback(async () => {
-    setLoadingPokemons(true);
-    const parsedPokemons = await parseRawPokemons(data.results);
-    setPokemons(parsedPokemons);
-    setLoadingPokemons(false);
-  }, [data.results]);
+    if (data && data?.results) {
+      setLoadingPokemons(true);
+      const parsedPokemons = await parseRawPokemons(data?.results);
+      setPokemons(parsedPokemons);
+      setLoadingPokemons(false);
+    }
+  }, [data]);
 
   useEffect(() => {
-    if (data != null && !loading) {
+    if (data != null) {
       parsePokemons();
     }
-  }, [data, loading]);
+  }, [data, parsePokemons]);
 
   return (
     <React.Fragment>
@@ -115,7 +117,11 @@ const PokemonList = ({navigation}) => {
           data={pokemons}
           numColumns={2}
           renderItem={({item}) => (
-            <PokemonCard pokemon={item} navigation={navigation} />
+            <PokemonCard
+              loading={loading || loadingPokemons}
+              pokemon={item}
+              navigation={navigation}
+            />
           )}
           onEndReached={() => {
             if (pokemons.length !== 0 && data.next) {
@@ -123,7 +129,7 @@ const PokemonList = ({navigation}) => {
             }
           }}
           ListFooterComponent={
-            !loadingPokemons ? <ListFooter /> : <React.Fragment />
+            !loading && loadingPokemons ? <ListFooter /> : <React.Fragment />
           }
         />
       )}

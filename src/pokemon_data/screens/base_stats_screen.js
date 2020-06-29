@@ -80,7 +80,7 @@ const BaseStatsScreen = props => {
         console.log(JSON.stringify(error));
         Snackbar.show({
           text:
-            'Cannot fetch pokemon information. Check your internet connection.',
+            'Cannot fetch base stats information. Check your internet connection.',
           duration: Snackbar.LENGTH_SHORT,
           backgroundColor: '#FB3737',
           action: {
@@ -96,7 +96,7 @@ const BaseStatsScreen = props => {
 
   return (
     <ScrollView style={styles.mainContainer}>
-      {data && !loading && (
+      {pokemonId && data && !loading && (
         <Grid style={styles.gridContainer}>
           <Row>
             <Col>
@@ -105,27 +105,27 @@ const BaseStatsScreen = props => {
           </Row>
           <ListItem
             title="HP"
-            subtitle={<ProgressBar progress={data.hp / 255} />}
+            subtitle={<ProgressBar progress={data?.hp / 255} />}
           />
           <ListItem
             title="Attack"
-            subtitle={<ProgressBar progress={data.attack / 190} />}
+            subtitle={<ProgressBar progress={data?.attack / 190} />}
           />
           <ListItem
             title="Defense"
-            subtitle={<ProgressBar progress={data.defense / 250} />}
+            subtitle={<ProgressBar progress={data?.defense / 250} />}
           />
           <ListItem
             title="Special attack"
-            subtitle={<ProgressBar progress={data.special_attack / 190} />}
+            subtitle={<ProgressBar progress={data?.special_attack / 190} />}
           />
           <ListItem
             title="Special defense"
-            subtitle={<ProgressBar progress={data.special_defense / 250} />}
+            subtitle={<ProgressBar progress={data?.special_defense / 250} />}
           />
           <ListItem
             title="Speed"
-            subtitle={<ProgressBar progress={data.speed / 180} />}
+            subtitle={<ProgressBar progress={data?.speed / 180} />}
           />
         </Grid>
       )}

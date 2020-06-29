@@ -19,11 +19,11 @@ const PokemonDataScreen = ({navigation, route}) => {
   const setPokemonIdForProvider = useSetPokemonId();
 
   useEffect(() => {
-    if (route.params?.idPokemon && !idPokemon) {
-      setPokemonId(route.params?.idPokemon);
-      setPokemonIdForProvider(route.params?.idPokemon);
+    if (route?.params?.idPokemon !== undefined) {
+      setPokemonId(route?.params?.idPokemon);
+      setPokemonIdForProvider(route?.params?.idPokemon);
     }
-  }, [route?.params.idPokemon]);
+  }, [route, route.params]);
 
   const {data = [], loading, get} = useFetch(
     idPokemon ? `pokemon/${idPokemon}` : '',
@@ -74,8 +74,7 @@ const PokemonDataScreen = ({navigation, route}) => {
       onError(error) {
         console.log(JSON.stringify(error));
         Snackbar.show({
-          text:
-            'Cannot fetch pokemon information. Check your internet connection.',
+          text: 'Cannot fetch pokemon data. Check your internet connection.',
           duration: Snackbar.LENGTH_SHORT,
           backgroundColor: '#FB3737',
           action: {
@@ -90,11 +89,11 @@ const PokemonDataScreen = ({navigation, route}) => {
   ); // runs onMount AND whenever the `page` updates (onUpdate)
 
   useEffect(() => {
-    if (data && data.types) {
+    if (idPokemon && data && data.types) {
       const typeColors = getColorsPerType(data?.types[0]);
       setColors(currTypeColors => typeColors);
     }
-  }, [data]);
+  }, [data, idPokemon]);
 
   return (
     <React.Fragment>
@@ -108,29 +107,29 @@ const PokemonDataScreen = ({navigation, route}) => {
         />
       </View>
       <SafeAreaView style={[styles.scene]}>
-        {data && (
+        {idPokemon && data && data?.name && (
           <Grid style={[styles.uperLayer, {backgroundColor: colors.color}]}>
             <Row style={{height: Dimensions.get('window').height / 10}}>
               <Col size={3}>
                 <Text h3 h3Style={styles.h3Style}>
-                  {data.name}
+                  {data?.name}
                 </Text>
               </Col>
               <Col size={1}>
                 <Text h3 h3Style={styles.numberStyle}>
-                  #{data.order}
+                  #{data?.order}
                 </Text>
               </Col>
             </Row>
             <Row style={styles.rowContainer}>
               <Col />
               {data &&
-                data.types &&
-                data.types.map((type, i) => {
+                data?.types &&
+                data?.types?.map((type, i) => {
                   return (
                     <Col>
                       <Button
-                        key={data.name + type}
+                        key={data?.name + type}
                         title={type}
                         titleStyle={styles.buttonTitleStyle}
                         buttonStyle={[

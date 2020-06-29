@@ -110,7 +110,7 @@ const EvolutionScreen = props => {
         console.log(JSON.stringify(error));
         Snackbar.show({
           text:
-            'Cannot fetch pokemon information. Check your internet connection.',
+            'Cannot fetch pokemon evolution information. Check your internet connection.',
           duration: Snackbar.LENGTH_SHORT,
           backgroundColor: '#FB3737',
           action: {
@@ -126,7 +126,7 @@ const EvolutionScreen = props => {
 
   return (
     <SafeAreaView style={styles.mainContainer}>
-      {data && !loading && (
+      {pokemonId && data && !loading && (
         <FlatList
           keyExtractor={(item, i) => item?.name}
           data={data}

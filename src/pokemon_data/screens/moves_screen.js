@@ -48,7 +48,7 @@ const MovesScreen = props => {
         console.log(JSON.stringify(error));
         Snackbar.show({
           text:
-            'Cannot fetch pokemon information. Check your internet connection.',
+            'Cannot fetch pokemon moves information. Check your internet connection.',
           duration: Snackbar.LENGTH_SHORT,
           backgroundColor: '#FB3737',
           action: {
@@ -64,9 +64,9 @@ const MovesScreen = props => {
 
   return (
     <SafeAreaView style={styles.mainContainer}>
-      {data && data?.moves && !loading && (
+      {pokemonId && data && data?.moves && !loading && (
         <FlatList
-          keyExtractor={(item, i) => item.name}
+          keyExtractor={(item, i) => item?.name}
           data={data.moves}
           renderItem={({item}) => <ListItem title={item?.name} />}
         />

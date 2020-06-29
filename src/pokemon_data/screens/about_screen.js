@@ -65,18 +65,20 @@ const AboutScreen = props => {
         return 1000 * (attempt + 1);
       },
       onError(error) {
-        console.log(JSON.stringify(error));
-        Snackbar.show({
-          text:
-            'Cannot fetch pokemon information. Check your internet connection.',
-          duration: Snackbar.LENGTH_SHORT,
-          backgroundColor: '#FB3737',
-          action: {
-            text: 'TRY AGAIN',
-            textColor: 'white',
-            onPress: () => get(),
-          },
-        });
+        if (error?.name === '404') {
+        } else {
+          Snackbar.show({
+            text:
+              'Cannot fetch pokemon about information. Check your internet connection.',
+            duration: Snackbar.LENGTH_SHORT,
+            backgroundColor: '#FB3737',
+            action: {
+              text: 'TRY AGAIN',
+              textColor: 'white',
+              onPress: () => get(),
+            },
+          });
+        }
       }, // appends newly fetched todos
     },
     [pokemonId],
@@ -84,7 +86,7 @@ const AboutScreen = props => {
 
   return (
     <ScrollView style={styles.mainContainer}>
-      {data && data !== null && !loading && (
+      {pokemonId && data && data?.description && (
         <Grid style={styles.gridContainer}>
           <Row>
             <Col>

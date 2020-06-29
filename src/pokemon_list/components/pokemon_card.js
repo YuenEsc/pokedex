@@ -5,7 +5,7 @@ import {Card, Image, Button} from 'react-native-elements';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import getColorsPerType from '../../shared/utils/get_colors_per_type';
 
-const PokemonCard = ({pokemon, navigation}) => {
+const PokemonCard = ({pokemon, navigation, loading}) => {
   const getColors = useCallback(() => {
     return getColorsPerType(pokemon.types[0]);
   }, [pokemon]);
@@ -14,6 +14,7 @@ const PokemonCard = ({pokemon, navigation}) => {
     <View style={styles.mainContainerStyle}>
       <TouchableOpacity
         activeOpacity={0.85}
+        disabled={loading}
         onPress={() => {
           navigation.navigate('Pokemon data', {idPokemon: pokemon.id});
         }}>
