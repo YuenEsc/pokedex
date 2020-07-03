@@ -5,9 +5,14 @@ A pokeded app built with react-native using Hooks and functional components only
  
 ## Version 2
 ![Version 2](https://media.giphy.com/media/iJDSWYU5hbXgzkRnrm/giphy.gif)
+
+
+
+
+
 Still on progress the V2 but is looking nice already
 
-![REACT NATIVE](https://github.com/YuenEsc/react-native-pokedex)
+![https://github.com/YuenEsc/react-native-pokedex](https://github.com/YuenEsc/react-native-pokedex)
 
 ## Description
 
