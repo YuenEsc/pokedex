@@ -4,8 +4,9 @@ A pokeded app built with react-native using Hooks and functional components only
  - The goal is to replicate a design as close as possible that belongs to  [Saepul Nahwan](https://dribbble.com/saepulnahwan23)
  
 ## Version 2
-
-https://github.com/YuenEsc/react-native-pokedex
+https://media.giphy.com/media/iJDSWYU5hbXgzkRnrm/giphy.gif
+Still on progress the V2 but is looking nice already
+![Alt Text](https://github.com/YuenEsc/react-native-pokedex)
 
 ## Description
 
