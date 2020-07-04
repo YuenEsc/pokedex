@@ -4,7 +4,7 @@ A pokeded app built with react-native using Hooks and functional components only
  - The goal is to replicate a design as close as possible that belongs to  [Saepul Nahwan](https://dribbble.com/saepulnahwan23)
  
 ## Version 2
-![Version 2](https://media.giphy.com/media/iJDSWYU5hbXgzkRnrm/giphy.gif)
+![Version 2](https://media.giphy.com/media/QuaPEsYfTolNi3eWyo/giphy.gif)
 
 
 
